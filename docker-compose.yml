@@ -1,0 +1,30 @@
+services:
+  redis:
+    image: "redis:alpine"
+    ports:
+      - "6379:6379"
+
+  webhook_service:
+    build:
+      context: ./services/webhook_service
+    ports:
+      - "8000:8000"
+    volumes:
+      - ./services/webhook_service:/app
+    environment:
+      - REDIS_URL=redis://redis:6379/0
+      - GITHUB_WEBHOOK_SECRET=${GITHUB_WEBHOOK_SECRET}
+    depends_on:
+      - redis
+
+  review_worker:
+    build:
+      context: ./services/review_worker
+    volumes:
+      - ./services/review_worker:/app
+    environment:
+      - REDIS_URL=redis://redis:6379/0
+      - GITHUB_TOKEN=${GITHUB_TOKEN}
+      - OPENAI_API_KEY=${OPENAI_API_KEY}
+    depends_on:
+      - redis

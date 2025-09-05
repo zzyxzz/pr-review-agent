@@ -1,0 +1,12 @@
+# Python
+__pycache__/
+*.pyc
+.env
+venv/
+.idea/
+
+# Docker
+docker-compose.override.yml
+
+packages/
+.ruff_cache

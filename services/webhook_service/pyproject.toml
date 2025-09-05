@@ -1,0 +1,11 @@
+[project]
+name = "webhook-service"
+version = "0.1.0"
+description = "Receives GitHub webhooks and queues review tasks."
+readme = "README.md"
+requires-python = ">=3.13"
+dependencies = [
+    "fastapi>=0.116.1",
+    "redis>=6.4.0",
+    "uvicorn>=0.35.0",
+]
