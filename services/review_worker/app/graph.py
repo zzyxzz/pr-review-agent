@@ -5,7 +5,12 @@ from langchain_core.messages import HumanMessage, SystemMessage
 from langgraph.graph import END, START, StateGraph
 from langgraph.types import Send
 
-from app.prompts import pull_request_review_instructions, review_system_prompt
+from app.prompts import (
+    pull_request_review_instructions,
+    review_system_prompt,
+    summary_instructions,
+    summary_system_prompt,
+)
 from app.schema import OverallState, ReviewAgentState, Reviews, Summary
 from app.tools import ChatModel
 
@@ -53,22 +58,19 @@ def review_file_node(state: ReviewAgentState):
 
 def summary_node(state: OverallState):
     """
-    Aggregate all file reviews into final PR review summary
+    Aggregate all file reviews into final PR review summary.
     """
-    summary_prompt = """
-    Below is the PR reviews:
-
-    {reviews}
-
-    Summarise the reviews so that they can be used as a high-level overview.
-    """
-
     summary_model = ChatModel.get_model(
         "openai:gpt-4o", Summary, temperature=0, api_key=OPENAI_API_KEY
     )
-    summary_prompt = summary_prompt.format(reviews=state.get("reviews", []))
-    logger.debug(f"\nsummary PROMPT: {summary_prompt}\n")
-    response = summary_model.invoke([HumanMessage(content=summary_prompt)])
+    prompt = summary_instructions.format(reviews=state.get("reviews", []))
+    logger.debug(f"\nsummary PROMPT: {prompt}\n")
+    response = summary_model.invoke(
+        [
+            SystemMessage(content=summary_system_prompt),
+            HumanMessage(content=prompt),
+        ]
+    )
     logger.debug(f"\nsummary node {state}\n")
     return {"summary": response.summary}
 
